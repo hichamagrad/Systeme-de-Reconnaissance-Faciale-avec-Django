@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Identifier un Visage</title>
+</head>
+<body>
+    <h2>Identifier un visage</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Identifier</button>
+    </form>
+
+    {% if result %}
+        <h3>Résultat : {{ result }}</h3>
+    {% endif %}
+
+    {% if messages %}
+        {% for message in messages %}
+            <p style="color: red;">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>
