@@ -12,6 +12,11 @@ class FaceForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control'})
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Rendre l'image optionnelle pour permettre l'enregistrement d'un visage déjà capturé
+        self.fields['image'].required = False
 
 class IdentifyForm(forms.Form):
     image = forms.ImageField(label='Image à identifier')

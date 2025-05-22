@@ -2,8 +2,12 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
+    # Page racine redirige vers la détection en temps réel
+    path('', RedirectView.as_view(url='realtime/', permanent=False), name='index'),
+    
     path('register/', views.register_face, name='register_face'),
     path('identify/', views.identify_face, name='identify_face'),
     path('realtime/', views.realtime_detection, name='realtime_detection'),

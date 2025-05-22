@@ -1,25 +1,94 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Identifier un Visage</title>
-</head>
-<body>
-    <h2>Identifier un visage</h2>
+{% extends "facial_app/base.html" %}
 
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Identifier</button>
-    </form>
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-search me-2"></i>Identifier un Visage</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
 
-    {% if result %}
-        <h3>Résultat : {{ result }}</h3>
-    {% endif %}
+                    <form method="POST" enctype="multipart/form-data" class="mb-4">
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">
+                                {{ field.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ field.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
 
-    {% if messages %}
-        {% for message in messages %}
-            <p style="color: red;">{{ message }}</p>
-        {% endfor %}
-    {% endif %}
-</body>
-</html>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Identifier
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="image-preview" class="text-center mb-4">
+                        <!-- La prévisualisation de l'image sera ajoutée ici par JavaScript -->
+                    </div>
+
+                    {% if result %}
+                        <div class="mt-4 p-3 {% if result == 'Inconnu' %}bg-danger{% else %}bg-success{% endif %} text-white rounded">
+                            <h4 class="mb-0 text-center">
+                                {% if result == 'Inconnu' %}
+                                    <i class="fas fa-question-circle me-2"></i>Résultat : {{ result }}
+                                {% else %}
+                                    <i class="fas fa-check-circle me-2"></i>Identifié : {{ result }}
+                                {% endif %}
+                            </h4>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 mt-3">
+                <a href="{% url 'realtime_detection' %}" class="btn btn-secondary">
+                    <i class="fas fa-video me-2"></i>Aller à la détection en temps réel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Script pour prévisualiser l'image sélectionnée
+document.addEventListener('DOMContentLoaded', function() {
+    const imageField = document.querySelector('input[type="file"]');
+    if (imageField) {
+        imageField.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const previewContainer = document.getElementById('image-preview');
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewContainer.innerHTML = `
+                        <h5 class="mb-2">Image à identifier</h5>
+                        <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 300px;">
+                    `;
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

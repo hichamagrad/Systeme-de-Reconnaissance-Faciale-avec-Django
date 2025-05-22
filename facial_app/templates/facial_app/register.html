@@ -1,23 +1,89 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Enregistrement de Visage</title>
-</head>
-<body>
-    <h2>Uploader un visage</h2>
+{% extends "facial_app/base.html" %}
 
-    {% if messages %}
-      {% for message in messages %}
-        <p style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">
-            {{ message }}
-        </p>
-      {% endfor %}
-    {% endif %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-user-plus me-2"></i>Enregistrer un Nouveau Visage</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
 
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Enregistrer</button>
-    </form>
-</body>
-</html>
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                <span class="text-danger">*</span>
+                                {% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ field.errors }}
+                            </div>
+                            {% endif %}
+                            {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Enregistrer
+                            </button>
+                            <a href="{% url 'realtime_detection' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour à la Détection
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Script pour prévisualiser l'image sélectionnée
+document.addEventListener('DOMContentLoaded', function() {
+    const imageField = document.querySelector('input[type="file"]');
+    if (imageField) {
+        imageField.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                // Créer ou récupérer un élément img pour la prévisualisation
+                let previewContainer = document.getElementById('image-preview');
+                if (!previewContainer) {
+                    previewContainer = document.createElement('div');
+                    previewContainer.id = 'image-preview';
+                    previewContainer.className = 'mt-3 text-center';
+                    this.parentNode.insertBefore(previewContainer, this.nextSibling);
+                }
+
+                // Ajouter ou mettre à jour l'image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewContainer.innerHTML = `
+                        <h5 class="mb-2">Aperçu de l'image</h5>
+                        <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 300px;">
+                    `;
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -55,19 +55,29 @@ document.getElementById('captureBtn').addEventListener('click', function() {
         document.getElementById('status').className = 'alert alert-info';
         document.getElementById('status').textContent = 'Traitement de l\'image...';
         
-        fetch('/process_unknown_face/', {
+        // URL complète avec le domaine
+        const currentUrl = window.location.origin;
+        
+        fetch(currentUrl + '/process_unknown_face/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')  // Ajouter le token CSRF
             },
             body: JSON.stringify({
                 image: imageData
-            })
+            }),
+            credentials: 'same-origin'  // Important pour les requêtes CSRF
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur réseau: ' + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                window.location.href = `/register_unknown_face/${data.unknown_face_id}/`;
+                window.location.href = currentUrl + `/register_unknown_face/${data.unknown_face_id}/`;
             } else {
                 document.getElementById('status').className = 'alert alert-danger';
                 document.getElementById('status').textContent = 'Erreur lors de la capture: ' + data.error;
@@ -84,6 +94,22 @@ document.getElementById('captureBtn').addEventListener('click', function() {
         document.getElementById('status').textContent = 'Erreur lors de la capture: ' + error.message;
     }
 });
+
+// Fonction pour obtenir le cookie CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
 // Fonction pour détecter les visages inconnus
 function checkForUnknownFaces() {
