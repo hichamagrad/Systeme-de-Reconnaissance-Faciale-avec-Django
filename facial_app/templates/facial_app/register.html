@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enregistrement de Visage</title>
+</head>
+<body>
+    <h2>Uploader un visage</h2>
+
+    {% if messages %}
+      {% for message in messages %}
+        <p style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">
+            {{ message }}
+        </p>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Enregistrer</button>
+    </form>
+</body>
+</html>

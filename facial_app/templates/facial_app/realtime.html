@@ -1,0 +1,99 @@
+{% extends "facial_app/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Détection en Temps Réel</h2>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <img src="{% url 'video_feed' %}" width="640" height="480" id="videoFeed">
+                    <canvas id="captureCanvas" style="display: none;" width="640" height="480"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Statut</h5>
+                    <div id="status" class="alert alert-info">
+                        En attente de détection...
+                    </div>
+                    <button id="captureBtn" class="btn btn-primary">
+                        Capturer le Visage Inconnu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let lastDetectionTime = 0;
+const detectionCooldown = 2000; // 2 secondes de cooldown entre les détections
+
+function captureFrame() {
+    const video = document.getElementById('videoFeed');
+    const canvas = document.getElementById('captureCanvas');
+    const context = canvas.getContext('2d');
+    
+    // S'assurer que le canvas a les mêmes dimensions que la vidéo
+    canvas.width = video.width;
+    canvas.height = video.height;
+    
+    // Dessiner l'image actuelle de la vidéo sur le canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Convertir le canvas en base64
+    return canvas.toDataURL('image/jpeg', 0.9);
+}
+
+document.getElementById('captureBtn').addEventListener('click', function() {
+    try {
+        const imageData = captureFrame();
+        document.getElementById('status').className = 'alert alert-info';
+        document.getElementById('status').textContent = 'Traitement de l\'image...';
+        
+        fetch('/process_unknown_face/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                image: imageData
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = `/register_unknown_face/${data.unknown_face_id}/`;
+            } else {
+                document.getElementById('status').className = 'alert alert-danger';
+                document.getElementById('status').textContent = 'Erreur lors de la capture: ' + data.error;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('status').className = 'alert alert-danger';
+            document.getElementById('status').textContent = 'Erreur lors de la capture: ' + error.message;
+        });
+    } catch (error) {
+        console.error('Capture error:', error);
+        document.getElementById('status').className = 'alert alert-danger';
+        document.getElementById('status').textContent = 'Erreur lors de la capture: ' + error.message;
+    }
+});
+
+// Fonction pour détecter les visages inconnus
+function checkForUnknownFaces() {
+    const now = Date.now();
+    if (now - lastDetectionTime > detectionCooldown) {
+        lastDetectionTime = now;
+    }
+}
+
+// Vérifier périodiquement les visages inconnus
+setInterval(checkForUnknownFaces, 1000);
+</script>
+{% endblock %} 
