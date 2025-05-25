@@ -2,7 +2,7 @@
 # Système de Reconnaissance Faciale avec Django
 
 ## Description
-Un système de reconnaissance faciale complet avec Django, OpenCV et la bibliothèque face_recognition. Cette application permet non seulement d'identifier des visages à partir d'images téléchargées mais également d'effectuer une détection faciale en temps réel via webcam.
+-Un système de reconnaissance faciale complet avec Django, OpenCV et la bibliothèque face_recognition. Cette application permet non seulement d'identifier des visages à partir d'images téléchargées mais également d'effectuer une détection faciale en temps réel via webcam.
 
 ## Fonctionnalités
 - **Détection en temps réel** : Reconnaissance faciale via webcam avec identification des personnes connues
